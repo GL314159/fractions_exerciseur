@@ -5,6 +5,10 @@ import pandas as pd
 
 NB_QUESTIONS = 8
 
+
+
+
+
 # --- Niveaux disponibles ---
 NIVEAUX = {
     "Additions seulement": ["+"],
@@ -13,8 +17,30 @@ NIVEAUX = {
 }
 
 previous_level = st.session_state.get("niveau_selectionne", None)
-niveau = st.selectbox("🎯 Choisis un niveau", list(NIVEAUX.keys()))
+#niveau = st.selectbox("🎯 Choisis un niveau", list(NIVEAUX.keys()))
+
+st.markdown(
+    """
+    <style>
+    div[data-baseweb="select"] {
+        margin-top: -35px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+col1, col2 = st.columns([1, 2.5])  # [texte, selectbox]
+with col2:
+    niveau = st.selectbox("", list(NIVEAUX.keys()))
+with col1:
+    st.markdown("🎯 $\;$ **Choisissez un niveau**")
 st.session_state.niveau_selectionne = niveau
+
+
+
+
+
+
 
 # --- Générer une question selon le niveau ---
 def generer_question():
@@ -38,7 +64,10 @@ def calculer_resultat(a, b, op, c, d):
     elif op == "=": return Fraction(a, b)
 
 def latex_fraction(frac):
-    return rf"\dfrac{{{frac.numerator}}}{{{frac.denominator}}}"
+    return f"\\dfrac{{\\mathsf{{{frac.numerator}}}}}{{\\mathsf{{{frac.denominator}}}}}"
+
+def latex_frac(a, b):
+    return f"\\dfrac{{\\mathsf{{{a}}}}}{{\\mathsf{{{b}}}}}"
 
 def explication_operation(a, b, op, c, d):
     f1, f2 = Fraction(a, b), Fraction(c, d) if d != 0 else Fraction(1, 1)
@@ -46,23 +75,23 @@ def explication_operation(a, b, op, c, d):
     if op == "=":
         f = Fraction(a, b)
         st.markdown("Tu dois **simplifier** la fraction :")
-        st.latex(rf"\dfrac{{{a}}}{{{b}}} = \dfrac{{{f.numerator}}}{{{f.denominator}}}")
+        st.latex(rf"{latex_frac(a, b)} = {latex_fraction(f)}")
         return
 
     if op in ["+", "-"]:
         operation = "addition" if op == "+" else "soustraction"
         st.markdown(f"Pour faire une **{operation}**, il faut mettre les deux fractions au même dénominateur.")
-        st.markdown(rf"On a : $\dfrac{{{a}}}{{{b}}}$ et $\dfrac{{{c}}}{{{d}}}$")
+        st.markdown(rf"On a : $\displaystyle {latex_frac(a,b)}$ et $\displaystyle {latex_frac(c, d)}$")
         result = f1 + f2 if op == "+" else f1 - f2
-        st.markdown(rf"On calcule : $\dfrac{{{f1.numerator}}}{{{f1.denominator}}} \; {op} \; \dfrac{{{f2.numerator}}}{{{f2.denominator}}} = {latex_fraction(result)}$")
+        st.markdown(rf"On calcule : $\displaystyle {latex_fraction(f1)} \; {op} \; {latex_fraction(f2)} = {latex_fraction(result)}$")
     elif op == "*":
         result = Fraction(a * c, b * d)
-        st.markdown("Pour **multiplier**, on multiplie les numérateurs et les dénominateurs :")
-        st.markdown(rf"$\dfrac{{{a}}}{{{b}}} \times \dfrac{{{c}}}{{{d}}} = {latex_fraction(result)}$")
+        st.markdown("Pour **multiplier** deux fractions, on multiplie les numérateurs et les dénominateurs :")
+        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \times {latex_frac(c,d)} = {latex_fraction(result)}$")
     elif op == ":":
         result = Fraction(a * d, b * c)
         st.markdown("Diviser par une fraction, c’est multiplier par son inverse :")
-        st.markdown(rf"$\dfrac{{{a}}}{{{b}}} \div \dfrac{{{c}}}{{{d}}} = \dfrac{{{a}}}{{{b}}} \times \dfrac{{{d}}}{{{c}}} = {latex_fraction(result)}$")
+        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \div {latex_frac(c, d)} = \dfrac{{{a}}}{{{b}}} \times \dfrac{{{d}}}{{{c}}} = {latex_fraction(result)}$")
 
 # --- Initialisation ---
 if "question" not in st.session_state:
@@ -98,7 +127,7 @@ if st.session_state.question_num > NB_QUESTIONS:
 
 # --- Affichage de la question ---
 a, b, op, c, d = st.session_state.question
-st.markdown("#### Entraîneur de fractions")  # un peu plus grand
+st.markdown("#### Calculons avec des fractions !")  # un peu plus grand
 
 progress = (st.session_state.question_num - 1) / NB_QUESTIONS * 100
 
@@ -117,14 +146,15 @@ st.markdown(
 )
 
 
-st.info(f"🔢 Score actuel : {st.session_state.score} / {st.session_state.question_num - 1}")
+st.markdown("<div style='margin-top: 0px;'></div>", unsafe_allow_html=True)
+st.info(f"Score actuel : {st.session_state.score} / {st.session_state.question_num - 1}")
 
 op_map = {"+": "+", "-": "-", "*": r"\times", ":": r"\div", "=": "="}
 if op == "=":
-    expr = rf"\dfrac{{{a}}}{{{b}}}"
+    expr = rf"\displaystyle {latex_frac(a,b)}"
     st.markdown("Simplifie la fraction suivante :")
 else:
-    expr = rf"\dfrac{{{a}}}{{{b}}} \; {op_map[op]} \; \dfrac{{{c}}}{{{d}}}"
+    expr = rf"\displaystyle {latex_frac(a,b)} \; {op_map[op]} \; {latex_frac(c, d)}"
 
 st.latex(expr)
 
@@ -133,7 +163,7 @@ input_key = f"reponse_input_{st.session_state.question_num}"
 already_corrected = st.session_state.correction_validee
 
 with st.form("form_reponse"):
-    reponse = st.text_input("✍️ Ta réponse (forme a/b)", key=input_key, disabled=already_corrected)
+    reponse = st.text_input("✍️ Votre réponse (format a/b)", key=input_key, disabled=already_corrected)
     submit = st.form_submit_button("✅ Vérifier", use_container_width=True)
 
 if submit and not already_corrected:
@@ -151,8 +181,8 @@ if submit and not already_corrected:
             st.success("✅ Bonne réponse ! Bravo !")
             st.session_state.score += 1
         else:
-            st.error("❌ Mauvaise réponse.")
-            st.markdown(rf"**La bonne réponse était :** $\dfrac{{{resultat.numerator}}}{{{resultat.denominator}}}$")
+            st.error(f"❌ Mauvaise réponse. $\quad$ **La bonne réponse est** $\quad\displaystyle {latex_fraction(resultat)}$")
+            #st.markdown(rf"**La bonne réponse était :** $\dfrac{{{resultat.numerator}}}{{{resultat.denominator}}}$")
             with st.expander("💡 Explication détaillée", expanded=False):
                 explication_operation(a, b, op, c, d)
 
@@ -174,8 +204,6 @@ if st.button("➡️ Question suivante", use_container_width=True):
     st.session_state.question = generer_question()
     st.session_state.correction_validee = False
     st.rerun()
-
-
 
 
 
@@ -209,11 +237,3 @@ st.markdown(
     f"</div>",
     unsafe_allow_html=True
 )
-
-
-
-
-
-
-
-
