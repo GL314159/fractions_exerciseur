@@ -2,18 +2,25 @@ import streamlit as st
 import random
 from fractions import Fraction
 import pandas as pd
+import math
 
 NB_QUESTIONS = 8
 
 
 
 
+st.markdown(
+    "<div style='text-align: center; font-size: 24px; font-weight: bold; color: orange;'>"
+    "Calculons avec des fractions !"
+    "</div>",
+    unsafe_allow_html=True
+)
 
 # --- Niveaux disponibles ---
 NIVEAUX = {
-    "Additions seulement": ["+"],
-    "Simplification uniquement": ["="],
-    "Niveau difficile": ["+", "-", "*", ":"]
+    "1 — Simplification uniquement": ["="],
+    "2 — Addition seulement": ["+"],
+    "3 — Mélange": ["+", "-", "*", ":"]
 }
 
 previous_level = st.session_state.get("niveau_selectionne", None)
@@ -33,7 +40,7 @@ col1, col2 = st.columns([1, 2.5])  # [texte, selectbox]
 with col2:
     niveau = st.selectbox("", list(NIVEAUX.keys()))
 with col1:
-    st.markdown("🎯 $\;$ **Choisissez un niveau**")
+    st.markdown("**Choisissez un niveau**")
 st.session_state.niveau_selectionne = niveau
 
 
@@ -43,15 +50,28 @@ st.session_state.niveau_selectionne = niveau
 
 
 # --- Générer une question selon le niveau ---
+if "deja_eu" not in st.session_state:
+    st.session_state.deja_eu = []
+
 def generer_question():
-    a, b = random.randint(1, 9), random.randint(1, 9)
-    if niveau == "Simplification uniquement":
+    a, b = 2, 2
+    while math.gcd(a, b) > 1 or (a, b) in st.session_state.deja_eu:
+        a = random.randint(1, 10)
+        b = random.randint(1, 10)
+    if niveau == "1 — Simplification uniquement":
         k = random.randint(2, 5)
         a *= k
         b *= k
+        st.session_state.deja_eu.append((a, b))
         return (a, b, "=", 0, 0)
     else:
-        c, d = random.randint(1, 9), random.randint(1, 9)
+        a, b, c, d = 2, 2, 2, 2
+        while math.gcd(c, d) > 1 or math.gcd(a, b) > 1  or (a, b) in st.session_state.deja_eu:
+            a = random.randint(1, 6) # pas besoin de numérateurs très grands
+            b = random.randint(1, 10)
+            c = random.randint(1, 6) # pas besoin de numérateurs très grands
+            d = random.randint(1, 10)
+        st.session_state.deja_eu.append((a, b)) # NB : il y a 23 couples d'entiers (a,b) entre 1 et 6 compris tels que gcd(a,b)==1 donc on peut avoir maximum 26 questions
         op = random.choice(NIVEAUX[niveau])
         return (a, b, op, c, d)
 
@@ -67,31 +87,42 @@ def latex_fraction(frac):
     return f"\\dfrac{{\\mathsf{{{frac.numerator}}}}}{{\\mathsf{{{frac.denominator}}}}}"
 
 def latex_frac(a, b):
-    return f"\\dfrac{{\\mathsf{{{a}}}}}{{\\mathsf{{{b}}}}}"
+    if b == 1:
+        return f"\\mathsf{{{a}}}"
+    else:
+        return f"\\dfrac{{\\mathsf{{{a}}}}}{{\\mathsf{{{b}}}}}"
 
 def explication_operation(a, b, op, c, d):
     f1, f2 = Fraction(a, b), Fraction(c, d) if d != 0 else Fraction(1, 1)
 
     if op == "=":
         f = Fraction(a, b)
-        st.markdown("Tu dois **simplifier** la fraction :")
-        st.latex(rf"{latex_frac(a, b)} = {latex_fraction(f)}")
+        a1 = a // f.numerator
+        b1 = b // f.denominator
+        assert(a1 == b1)
+        st.markdown("Pour **simplifier** une fraction, on factorise le numérateur et le dénominateur :")
+        st.latex(rf"{latex_frac(a, b)} \;=\; \dfrac{{\mathsf{{{a1}}} \cdot \mathsf{{{f.numerator}}}}}{{\mathsf{{{b1}}} \cdot \mathsf{{{f.denominator}}}}}   \;=\;   {latex_fraction(f)}")
         return
 
     if op in ["+", "-"]:
         operation = "addition" if op == "+" else "soustraction"
         st.markdown(f"Pour faire une **{operation}**, il faut mettre les deux fractions au même dénominateur.")
-        st.markdown(rf"On a : $\displaystyle {latex_frac(a,b)}$ et $\displaystyle {latex_frac(c, d)}$")
+        M = math.lcm(b, d)
+        st.markdown(f"Ici, le plus petit dénominateur commun est {M}.")
+        #### quid si les fractions ne sont pas simplifiées au départ ? ***
+        st.markdown(rf"On amplifie chaque fraction : $\quad\displaystyle {latex_frac(a,b)} = {latex_frac(a*math.lcm(b, d)//b, M)}\quad$ et $\quad\displaystyle {latex_frac(c, d)}= {latex_frac(c*math.lcm(b, d)//d, M)}\quad$")
         result = f1 + f2 if op == "+" else f1 - f2
-        st.markdown(rf"On calcule : $\displaystyle {latex_fraction(f1)} \; {op} \; {latex_fraction(f2)} = {latex_fraction(result)}$")
+        st.markdown(rf"On déduit donc que $\quad\displaystyle {latex_fraction(f1)} \; {op} \; {latex_fraction(f2)} \;=\; {latex_frac(a*math.lcm(b, d)//b, M)} + {latex_frac(c*math.lcm(b, d)//d, M)} \;=\; {latex_frac(a*math.lcm(b, d)//b  +  c*math.lcm(b, d)//d, M)}$")
+        if result.denominator != M:
+            st.markdown(rf"Finalement, on simplifie la fraction obtenue : $\quad\displaystyle {latex_frac(a*math.lcm(b, d)//b  +  c*math.lcm(b, d)//d, M)} \;=\; {latex_fraction(result)}$")
     elif op == "*":
         result = Fraction(a * c, b * d)
         st.markdown("Pour **multiplier** deux fractions, on multiplie les numérateurs et les dénominateurs :")
-        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \times {latex_frac(c,d)} = {latex_fraction(result)}$")
+        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \times {latex_frac(c,d)}  \;=\;  {latex_fraction(result)}$")
     elif op == ":":
         result = Fraction(a * d, b * c)
         st.markdown("Diviser par une fraction, c’est multiplier par son inverse :")
-        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \div {latex_frac(c, d)} = \dfrac{{{a}}}{{{b}}} \times \dfrac{{{d}}}{{{c}}} = {latex_fraction(result)}$")
+        st.markdown(rf"$\displaystyle {latex_frac(a,b)} \div {latex_frac(c, d)}  \;=\;  \dfrac{{{a}}}{{{b}}} \cdot \dfrac{{{d}}}{{{c}}} = {latex_fraction(result)}$")
 
 # --- Initialisation ---
 if "question" not in st.session_state:
@@ -127,7 +158,6 @@ if st.session_state.question_num > NB_QUESTIONS:
 
 # --- Affichage de la question ---
 a, b, op, c, d = st.session_state.question
-st.markdown("##### Calculons avec des fractions !")  # un peu plus grand
 
 progress = (st.session_state.question_num - 1) / NB_QUESTIONS * 100
 
@@ -135,7 +165,7 @@ st.markdown(
     f"""
     <div style='display: flex; align-items: center; gap: 1em;'>
         <div style='font-size: 1rem; white-space: nowrap;'>
-            📘 Question {st.session_state.question_num} / {NB_QUESTIONS}
+            Question {st.session_state.question_num} / {NB_QUESTIONS}
         </div>
         <div style='flex-grow: 1; background: #eee; height: 10px; border-radius: 5px;'>
             <div style='width: {progress}%; background: #2b8fe5; height: 100%; border-radius: 5px;'></div>
@@ -149,14 +179,12 @@ st.markdown(
 st.markdown("<div style='margin-top: 0px;'></div>", unsafe_allow_html=True)
 st.info(f"Score actuel : {st.session_state.score} / {st.session_state.question_num - 1}")
 
-op_map = {"+": "+", "-": "-", "*": r"\times", ":": r"\div", "=": "="}
+op_map = {"+": "+", "-": "-", "*": r"\cdot", ":": r"\div", "=": "="}
 if op == "=":
-    expr = rf"\displaystyle {latex_frac(a,b)}"
-    st.markdown("Simplifie la fraction suivante :")
-else:
-    expr = rf"\displaystyle {latex_frac(a,b)} \; {op_map[op]} \; {latex_frac(c, d)}"
+    st.markdown(f"Simplifier la fraction suivante : $\qquad\\displaystyle {latex_frac(a, b)}$")
 
-st.latex(expr)
+else:
+    st.markdown(f"Écrire sous forme de fraction irréductible : $\qquad\\displaystyle {latex_frac(a,b)} \; {op_map[op]} \; {latex_frac(c, d)}$")
 
 # --- Champ de réponse ---
 input_key = f"reponse_input_{st.session_state.question_num}"
@@ -178,11 +206,11 @@ if submit and not already_corrected:
         est_correct = rep_utilisateur == resultat
 
         if est_correct:
-            st.success("✅ Bonne réponse ! Bravo !")
+            st.success("✅ Réponse correcte ! Bravo !")
             st.session_state.score += 1
         else:
-            st.error(f"❌ Mauvaise réponse. $\quad$ **La bonne réponse est** $\quad\displaystyle {latex_fraction(resultat)}$")
-            #st.markdown(rf"**La bonne réponse était :** $\dfrac{{{resultat.numerator}}}{{{resultat.denominator}}}$")
+            st.error(f"❌ Réponse incorrecte.  \n**La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
+            #  deux espaces avant le \n !!!
             with st.expander("💡 Explication détaillée", expanded=False):
                 explication_operation(a, b, op, c, d)
 
@@ -201,7 +229,8 @@ if submit and not already_corrected:
 # --- Suivant ---
 if st.button("➡️ Question suivante", use_container_width=True):
     st.session_state.question_num += 1
-    st.session_state.question = generer_question()
+    G = generer_question()
+    st.session_state.question = G
     st.session_state.correction_validee = False
     st.rerun()
 
@@ -233,7 +262,15 @@ else:
 
 st.markdown(
     f"<div style='text-align: right; font-size: 0.2em; color: grey; margin-top: 4em;'>"
-    f"Nombre de visites : {total}"
+    rf"Développé par G. L. (Bussigny, 2025)   <span style='display:inline-block; width:20px;'></span>    Nombre de visites : {total}"
     f"</div>",
     unsafe_allow_html=True
 )
+
+
+
+
+
+
+
+
