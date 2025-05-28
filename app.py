@@ -38,7 +38,7 @@ def calculer_resultat(a, b, op, c, d):
     elif op == "=": return Fraction(a, b)
 
 def latex_fraction(frac):
-    return rf"\mathsf{\dfrac{{{frac.numerator}}}{{{frac.denominator}}}}"
+    return rf"\mathsf{{\\dfrac{{{frac.numerator}}}{{{frac.denominator}}}}}"
 
 def explication_operation(a, b, op, c, d):
     f1, f2 = Fraction(a, b), Fraction(c, d) if d != 0 else Fraction(1, 1)
