@@ -127,7 +127,7 @@ if st.session_state.question_num > NB_QUESTIONS:
 
 # --- Affichage de la question ---
 a, b, op, c, d = st.session_state.question
-st.markdown("#### Calculons avec des fractions !")  # un peu plus grand
+st.markdown("##### Calculons avec des fractions !")  # un peu plus grand
 
 progress = (st.session_state.question_num - 1) / NB_QUESTIONS * 100
 
