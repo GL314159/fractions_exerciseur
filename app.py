@@ -190,7 +190,7 @@ if previous_level and niveau != previous_level:
 
 # --- Fin de quiz ---
 if st.session_state.question_num > st.session_state.nb_questions:
-    st.title("🎉 Exercice terminé !")
+    st.markdown("#### 🎉 Exercice terminé !")
     st.success(f"🏁 Score final : **{st.session_state.score} / {st.session_state.nb_questions}**")
     df = pd.DataFrame(st.session_state.historique)
     st.dataframe(df)
