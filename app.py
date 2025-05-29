@@ -3,7 +3,7 @@ import random
 from fractions import Fraction
 import pandas as pd
 import math
-
+from datetime import datetime
 
 
 st.markdown(
@@ -197,8 +197,11 @@ if st.session_state.question_num > st.session_state.nb_questions:
     col1, col2 = st.columns([3, 1])
 
     with col1:
+        now = datetime.now().strftime("%Y-%m-%d_%Hh%M")
+        nom_fichier = f"resultats_fractions_{now}.csv"
         csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("📥 Télécharger les résultats", csv, "resultats_fractions.csv", "text/csv")
+        st.download_button("📥 Télécharger les résultats", csv, nom_fichier, "text/csv")
+
 
     with col2:
         if st.button("🔄 Recommencer"):
