@@ -47,12 +47,20 @@ st.session_state.niveau_selectionne = niveau
 
 
 
+
+
+
+
 # Définir le nombre de questions selon le niveau
 if niveau == "3 — Mélange":
     NB_QUESTIONS = 10
 else:
     NB_QUESTIONS = 8
 
+if niveau == "3 — Mélange" and "operations_melange" not in st.session_state:
+    ops = ["*", "*", ":", ":"] + random.choices(["+", "-"], k = NB_QUESTIONS - 4 + 1)   #Il y aura 2 multipications, 2 divisions et le reste : + ou -
+    random.shuffle(ops)
+    st.session_state.operations_melange = ops
 
 
 
@@ -74,13 +82,17 @@ def generer_question():
         return (a, b, "=", 0, 0)
     else:
         a, b, c, d = 2, 2, 2, 2
-        while math.gcd(c, d) > 1 or math.gcd(a, b) > 1   or   (a, b) in st.session_state.deja_eu   or  b*d==1:
+        while math.gcd(c, d) > 1 or math.gcd(a, b) > 1   or   (a, b) in st.session_state.deja_eu   or  b*d==1  or (a,b)==(c,d):
             a = random.randint(1, 6) # pas besoin de numérateurs très grands
             b = random.randint(1, 10)
             c = random.randint(1, 6) # pas besoin de numérateurs très grands
             d = random.randint(1, 10)
         st.session_state.deja_eu.append((a, b)) # NB : il y a 23 couples d'entiers (a,b) entre 1 et 6 compris tels que gcd(a,b)==1 donc on peut avoir maximum 26 questions
-        op = random.choice(NIVEAUX[niveau])
+        if niveau == "3 — Mélange":
+            op = st.session_state.operations_melange[st.session_state.question_num - 1]
+        else:
+            op = random.choice(NIVEAUX[niveau])
+
         return (a, b, op, c, d)
 
 def calculer_resultat(a, b, op, c, d):
