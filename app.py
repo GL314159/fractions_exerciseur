@@ -132,12 +132,13 @@ def explication_operation(a, b, op, c, d, num, den): #num, den = ce qu'a rentré
             st.markdown(f"C'est presque juste ! Vous avez uniquement oublié de simplifier la fraction.")
         else:
             operation = "addition" if op == "+" else "soustraction"
+            signe = 1 if op == "+" else -1
             st.markdown(f"Pour faire une **{operation}**, il faut mettre les deux fractions au même dénominateur.")
             M = math.lcm(b, d)
             st.markdown(f"Ici, le plus petit dénominateur commun est {M}.")
             #### quid si les fractions ne sont pas simplifiées au départ ? ***
             st.markdown(rf"On amplifie chaque fraction : $\quad\displaystyle {latex_frac(a,b)} = {latex_frac(a*math.lcm(b, d)//b, M)}\quad$ et $\quad\displaystyle {latex_frac(c, d)}= {latex_frac(c*math.lcm(b, d)//d, M)}\quad$")
-            st.markdown(rf"On déduit donc que $\quad\displaystyle {latex_fraction(f1)} \; {op} \; {latex_fraction(f2)} \;=\; {latex_frac(a*math.lcm(b, d)//b, M)} + {latex_frac(c*math.lcm(b, d)//d, M)} \;=\; {latex_frac(a*math.lcm(b, d)//b  +  c*math.lcm(b, d)//d, M)}$")
+            st.markdown(rf"On déduit donc que $\quad\displaystyle {latex_fraction(f1)} \; {op} \; {latex_fraction(f2)} \;=\; {latex_frac(a*math.lcm(b, d)//b, M)} \; {op} \; {latex_frac(c*math.lcm(b, d)//d, M)} \;=\; {latex_frac(a*math.lcm(b, d)//b  +  signe*c*math.lcm(b, d)//d, M)}$")
             if result.denominator != M:
                 st.markdown(rf"Finalement, on simplifie la fraction obtenue : $\quad\displaystyle {latex_frac(a*math.lcm(b, d)//b  +  c*math.lcm(b, d)//d, M)} \;=\; {latex_fraction(result)}$")
 
