@@ -327,7 +327,7 @@ if st.session_state.get("feedback"):
 # Solution complète
 if st.session_state["tentatives"] >= 3:
     #with st.expander("📌 Voir la solution"):
-    st.write(f"La réponse correcte est $\\quad\\displaystyle {latex_fraction(resultat)}$")
+    st.write(f"La réponse correcte est $\quad\\displaystyle {latex_fraction(resultat)}$")
     with st.expander("💡 Explication détaillée", expanded=False):
         explication_operation(a, b, op, c, d, num, den)
 
