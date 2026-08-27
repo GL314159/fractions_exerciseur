@@ -21,7 +21,7 @@ if "tentatives" not in st.session_state:
 # --- Niveaux disponibles ---
 NIVEAUX = {
     "1 — Simplification uniquement": ["="],
-    "2 — Addition seulement": ["+"],
+    "2 — Addition et soustraction seulement": ["+", "-"],
     "3 — Mélange": ["+", "-", "*", ":"]
 }
 
