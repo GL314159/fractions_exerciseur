@@ -274,7 +274,7 @@ already_corrected = st.session_state.correction_validee
 
 with st.form("form_reponse"):
     reponse = st.text_input("✍️ Votre réponse (format a/b)", key=input_key, disabled=already_corrected)
-    submit = st.form_submit_button("✅ Vérifier", use_container_width=True)
+    submit = st.form_submit_button("✅ Vérifier", use_container_width=True, disabled=st.session_state["tentatives"] >= 2)
 
 if submit and not already_corrected:
     try:
@@ -292,8 +292,10 @@ if submit and not already_corrected:
         if est_correct:
             st.success("✅ Réponse correcte ! Bravo !")
             st.session_state.score += 1
+            st.session_state["tentatives"] = 0
         else:
             st.error(f"❌ Réponse incorrecte.  \n**La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
+            st.session_state["tentatives"] += 1
             #  deux espaces avant le \n !!!
             with st.expander("💡 Explication détaillée", expanded=False):
                 explication_operation(a, b, op, c, d, num, den)
@@ -308,7 +310,7 @@ if submit and not already_corrected:
         st.session_state.correction_validee = True
 
     except:
-        st.warning("❗ Format invalide. Exemple : `3/4` ou `2`.")
+        st.warning("⚠️ Format invalide. Exemple : `3/4` ou `2`.")
 
 
 
