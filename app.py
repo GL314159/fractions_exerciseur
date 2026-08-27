@@ -93,7 +93,9 @@ def generer_question():
         return (a, b, "=", 0, 0)
     else:
         a, b, c, d = 2, 2, 2, 2
-        while math.gcd(c, d) > 1 or math.gcd(a, b) > 1   or   (a, b) in st.session_state.deja_eu   or  b*d==1  or (a,b)==(c,d):
+        while math.gcd(c, d) > 1 or math.gcd(a, b) > 1   or   (a, b) in st.session_state.deja_eu   or  b*d==1  or (a,b)==(c,d)  or  a/b==1  or c/d==1:
+            #b*d==1 --> éviter que les deux fractions soient des nombres entiers ! Mais l'une des deux fractions peut être un entier.
+            #*** Il faut rajouter une condition pour éviter de multiplier ou diviser une fraction par 1, car c'est trop facile :-)   Pour faire simple, j'empêche les fractions de valoir 1.
             a = random.randint(1, 6) # pas besoin de numérateurs très grands
             b = random.randint(1, 10)
             c = random.randint(1, 6) # pas besoin de numérateurs très grands
@@ -296,7 +298,7 @@ if submit and not already_corrected:
                 st.session_state.correction_validee = True
             else:
                 st.session_state["feedback"] = (
-                    f"⚠️ **Presque correct. On peut encore simplifier la fraction.** "
+                    f"❌ **Presque correct. On peut encore simplifier la fraction.** "
                     f"(tentative {st.session_state['tentatives'] + 1} sur 3). "
                 )
                 st.session_state["tentatives"] += 1
