@@ -14,6 +14,8 @@ st.markdown(
 )
 st.set_page_config(page_title="Fractions", page_icon="")
 
+if "tentatives" not in st.session_state:
+    st.session_state["tentatives"] = 0
 
 
 # --- Niveaux disponibles ---
@@ -35,12 +37,21 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-col1, col2 = st.columns([1, 2.5])  # [texte, selectbox]
-with col2:
-    niveau = st.selectbox("", list(NIVEAUX.keys()))
+col1, col2, col3 = st.columns([1.1, 2.6, 1.3]) 
 with col1:
     st.markdown("**Choisissez un niveau**")
+with col2:
+    niveau = st.selectbox("", list(NIVEAUX.keys()))
 
+    if "niveau_precedent" not in st.session_state:
+        st.session_state["niveau_precedent"] = niveau
+
+    if niveau != st.session_state["niveau_precedent"]:
+        st.session_state["tentatives"] = 0
+        st.session_state["feedback"] = ""
+        st.session_state["niveau_precedent"] = niveau
+
+previous_level = st.session_state.get("niveau_selectionne", None)
 st.session_state.niveau_selectionne = niveau
 
 
@@ -163,6 +174,7 @@ def explication_operation(a, b, op, c, d, num, den): #num, den = ce qu'a rentré
 
 # --- Initialisation ---
 if "question" not in st.session_state:
+    st.session_state["question"] = True  #<-- sinon cliquer "Vérifier" va remettre une nouvelle question !
     st.session_state.question = generer_question()
 if "question_num" not in st.session_state:
     st.session_state.question_num = 1
