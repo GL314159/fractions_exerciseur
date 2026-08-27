@@ -289,7 +289,7 @@ if submit and not already_corrected:
         resultat = calculer_resultat(a, b, op, c, d)
 
         if rep_utilisateur == resultat:
-            if math.gcd(num,den) == 1:
+            if math.gcd(num, den) == 1:
                 st.success("✅ Réponse correcte ! Bravo !")
                 st.session_state.score += 1
                 st.session_state["tentatives"] = 0
@@ -327,9 +327,18 @@ if st.session_state.get("feedback"):
 # Solution complète
 if st.session_state["tentatives"] >= 3:
     #with st.expander("📌 Voir la solution"):
+    resultat = calculer_resultat(a, b, op, c, d)
     st.write(f"La réponse correcte est $\quad\\displaystyle {latex_fraction(resultat)}$")
-    with st.expander("💡 Explication détaillée", expanded=False):
-        explication_operation(a, b, op, c, d, num, den)
+    
+    # Vérification de sécurité pour l'explication (pour éviter erreur si num/den non définis)
+    try:
+        with st.expander("💡 Explication détaillée", expanded=False):
+            # On utilise des valeurs par défaut si la réponse n'a jamais été soumise
+            num_util = num if 'num' in locals() else 0
+            den_util = den if 'den' in locals() else 1
+            explication_operation(a, b, op, c, d, num_util, den_util)
+    except:
+        pass # Ignore les erreurs si l'explication échoue
 
 
 
@@ -381,7 +390,7 @@ else:
 
 st.markdown(
     f"<div style='text-align: right; font-size: 0.2em; color: grey; margin-top: 4em;'>"
-    rf"Développé par G. Leterrier (Gymnase de Bussigny, 2025)   <span style='display:inline-block; width:20px;'></span>    Nombre de visites : {total}"
+    rf"Développé par G. Leterrier (Gymnase de Bussigny, 2025-2026)   <span style='display:inline-block; width:20px;'></span>    Nombre de visites : {total}"
     f"</div>",
     unsafe_allow_html=True
 )
