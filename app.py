@@ -293,6 +293,7 @@ if submit and not already_corrected:
                 st.success("✅ Réponse correcte ! Bravo !")
                 st.session_state.score += 1
                 st.session_state["tentatives"] = 0
+                st.session_state.correction_validee = True
             else:
                 st.session_state["feedback"] = (
                     f"⚠️ **Presque correct. On peut encore simplifier la fraction.** "
@@ -316,7 +317,6 @@ if submit and not already_corrected:
             "Bonne réponse": str(resultat),
             "Correct": "✅" if (rep_utilisateur == resultat and math.gcd(num,den) == 1) else "❌"
         })
-        st.session_state.correction_validee = True
 
     except:
         st.warning("⚠️ Format invalide. Exemple : `3/4` ou `2`.")
