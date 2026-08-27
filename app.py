@@ -305,10 +305,9 @@ if submit and not already_corrected:
                 f"(tentative {st.session_state['tentatives'] + 1} sur 3). "
             )
             #st.error(f"❌ Réponse incorrecte.  \n**La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
-            st.session_state["tentatives"] += 1
             #  deux espaces avant le \n !!!
-            with st.expander("💡 Explication détaillée", expanded=False):
-                explication_operation(a, b, op, c, d, num, den)
+            st.session_state["tentatives"] += 1
+ 
 
         st.session_state.historique.append({
             "Niveau": niveau,
@@ -328,8 +327,9 @@ if st.session_state.get("feedback"):
 # Solution complète
 if st.session_state["tentatives"] >= 3:
     #with st.expander("📌 Voir la solution"):
-    st.write(f"La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
-
+    st.write(f"La réponse correcte est $\\quad\\displaystyle {latex_fraction(resultat)}$")
+    with st.expander("💡 Explication détaillée", expanded=False):
+        explication_operation(a, b, op, c, d, num, den)
 
 
 
