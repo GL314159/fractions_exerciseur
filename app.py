@@ -287,14 +287,24 @@ if submit and not already_corrected:
             den = 1
 
         resultat = calculer_resultat(a, b, op, c, d)
-        est_correct = (rep_utilisateur == resultat and math.gcd(num,den)==1)
 
-        if est_correct:
-            st.success("✅ Réponse correcte ! Bravo !")
-            st.session_state.score += 1
-            st.session_state["tentatives"] = 0
+        if rep_utilisateur == resultat:
+            if math.gcd(num,den) == 1:
+                st.success("✅ Réponse correcte ! Bravo !")
+                st.session_state.score += 1
+                st.session_state["tentatives"] = 0
+            else:
+                st.session_state["feedback"] = (
+                    f"⚠️ **Presque correct. On peut encore simplifier la fraction.** "
+                    f"(tentative {st.session_state['tentatives'] + 1} sur 3). "
+                )
+                st.session_state["tentatives"] += 1
         else:
-            st.error(f"❌ Réponse incorrecte.  \n**La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
+            st.session_state["feedback"] = (
+                f"❌ Réponse incorrecte "
+                f"(tentative {st.session_state['tentatives'] + 1} sur 3). "
+            )
+            #st.error(f"❌ Réponse incorrecte.  \n**La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
             st.session_state["tentatives"] += 1
             #  deux espaces avant le \n !!!
             with st.expander("💡 Explication détaillée", expanded=False):
@@ -311,6 +321,14 @@ if submit and not already_corrected:
 
     except:
         st.warning("⚠️ Format invalide. Exemple : `3/4` ou `2`.")
+    
+if st.session_state.get("feedback"):
+        st.write(st.session_state["feedback"])
+
+# Solution complète
+if st.session_state["tentatives"] >= 3:
+    #with st.expander("📌 Voir la solution"):
+    st.write(f"La réponse correcte est** $\quad\\displaystyle {latex_fraction(resultat)}$")
 
 
 
