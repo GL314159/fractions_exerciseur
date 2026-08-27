@@ -314,7 +314,7 @@ if submit and not already_corrected:
             "Question": f"{a}/{b} {op} {c}/{d}" if op != "=" else f"{a}/{b}",
             "Réponse élève": reponse,
             "Bonne réponse": str(resultat),
-            "Correct": "✅" if est_correct else "❌"
+            "Correct": "✅" if (rep_utilisateur == resultat and math.gcd(num,den) == 1) else "❌"
         })
         st.session_state.correction_validee = True
 
