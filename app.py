@@ -316,13 +316,23 @@ if submit and not already_corrected:
 
 
 # --- Suivant ---
-if st.button("➡️ Question suivante", use_container_width=True):
-    st.session_state.question_num += 1
-    G = generer_question()
-    st.session_state.question = G
-    st.session_state.correction_validee = False
-    st.rerun()
-
+with col3:
+    st.markdown("""
+    <style>
+    div.stButton {
+        margin-top: -23px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    if st.button("➡️ Nouvelle question", disabled=st.session_state["question_num"] > NB_QUESTIONS):#question suivante  use_container_width=True)
+        st.session_state["tentatives"] = 0
+        st.session_state["feedback"] = ""
+        st.session_state["reponse"] = ""
+        st.session_state.question_num += 1
+        G = generer_question()
+        st.session_state.question = G
+        st.session_state.correction_validee = False
+        st.rerun()
 
 
 
